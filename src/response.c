@@ -1,4 +1,5 @@
 #include "response.h"
+#include "util.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -6,7 +7,6 @@
 
 char *load_uri(const char *path, long *content_size)
 {
-  // TODO: This currently cannot handle encoded values, things like %20 etc
   FILE *file;
   file = fopen(path, "rb");
   if (file == NULL)
@@ -33,9 +33,9 @@ char *load_uri(const char *path, long *content_size)
   return contents;
 }
 
-char *build_header(int protocol_major, int protocol_minor, char *content_type, long content_size)
+char *build_header(int status_code, const char *status_text, int protocol_major, int protocol_minor, 
+                   const char *content_type, long content_size)
 {
-  // Prepare and send HTTP response
   char *response_header = malloc(BUFFER_SIZE);
   if (response_header == NULL)
   {
@@ -43,14 +43,15 @@ char *build_header(int protocol_major, int protocol_minor, char *content_type, l
     return NULL;
   }
   snprintf(response_header, BUFFER_SIZE,
-           "HTTP/%d.%d 200 OK\r\n"
+           "HTTP/%d.%d %d %s\r\n"
            "Content-Type: %s\r\n"
-           "Content-Length: %ld\r\n\r\n",
+           "Content-Length: %ld\r\n"
+           "Connection: close\r\n\r\n",
            protocol_major, protocol_minor,
+           status_code, status_text,
            content_type,
            content_size);
 
-  printf("%s\n", response_header);
   return response_header;
 }
 
@@ -82,31 +83,41 @@ int send_error_response(int client_fd, int status_code, const char *status_text,
 
 int process_response(int client_fd, const char *path, int protocol_major, int protocol_minor)
 {
+  char *decoded_path = url_decode(path);
+  if (decoded_path == NULL)
+  {
+    send_error_response(client_fd, 400, "Bad Request", "Invalid URL encoding.");
+    return -1;
+  }
+
+  const char *mime_type = get_mime_type(decoded_path);
+
   long content_size;
-  char *contents = load_uri(path, &content_size);
+  char *contents = load_uri(decoded_path, &content_size);
 
   if (contents == NULL)
   {
-    // File not found or other error
+    free(decoded_path);
     send_error_response(client_fd, 404, "Not Found", "The requested resource was not found.");
     return -1;
   }
 
-  printf("Serving file: %s\n", path);
+  printf("Serving file: %s (type: %s)\n", decoded_path, mime_type);
 
-  // Add 2 to the content size to accommodate the CRLF
-  char *header = build_header(protocol_major, protocol_minor, "", content_size + 2);
+  char *header = build_header(200, "OK", protocol_major, protocol_minor, mime_type, content_size);
   if (header == NULL)
   {
     free(contents);
+    free(decoded_path);
     send_error_response(client_fd, 500, "Internal Server Error", "Failed to build response header.");
     return -1;
   }
 
   send(client_fd, header, strlen(header), 0);
   send(client_fd, contents, content_size, 0);
-  send(client_fd, CRLF, 2, 0);
+
   free(contents);
+  free(decoded_path);
   free(header);
   return 0;
 }
