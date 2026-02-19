@@ -1,0 +1,44 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake check libcheck-dev
+    
+    - name: Configure
+      run: mkdir -p build && cd build && cmake ..
+    
+    - name: Build
+      run: cd build && make
+    
+    - name: Run tests
+      run: cd build && ./tests/unit/tests
+
+  format:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install clang-format
+      run: sudo apt-get install -y clang-format
+    
+    - name: Check formatting
+      run: |
+        if ! clang-format --dry-run -Werror src/*.c app/*.c include/*.h 2>/dev/null; then
+          echo "Code formatting issues found. Run clang-format to fix."
+          exit 1
+        fi
