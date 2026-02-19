@@ -17,10 +17,12 @@ cmake ..
 make
 ```
 
+The executable will be at `./build/app/http-server`.
+
 ## Usage
 
 ```bash
-./http-server [--port|-p <port>] [--root|-r <directory>]
+./build/app/http-server [--port|-p <port>] [--root|-r <directory>]
 ```
 
 ### Arguments
@@ -34,34 +36,37 @@ make
 
 ```bash
 # Start server on port 8080 serving current directory
-./http-server
+./build/app/http-server
 
 # Start server on port 3000
-./http-server --port 3000
+./build/app/http-server --port 3000
 
 # Start server on port 8080 serving /var/www
-./http-server --root /var/www
+./build/app/http-server --root /var/www
 
 # Combined options
-./http-server -p 8080 -r ./public
+./build/app/http-server -p 8080 -r ./public
 ```
 
 ## Architecture
 
-- **main.c** - Server socket initialization, argument parsing, main loop
+- **app/main.c** - Entry point
+- **src/server.c** - Server socket handling and main loop
 - **src/request.c** - HTTP request parsing (method, URI, protocol)
 - **src/response.c** - HTTP response generation and file serving
 - **src/progargs.c** - Command-line argument handling
 - **src/util.c** - Utility functions
+- **include/http_types.h** - Shared HTTP types and enums
+- **include/server.h** - Server module interface
 
 ## Testing
 
 ```bash
 # Build and run tests
-mkdir build && cd build
+cd build
 cmake ..
 make
-./tests/tests
+./tests/unit/tests
 ```
 
 ## Status
