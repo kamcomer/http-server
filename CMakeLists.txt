@@ -1,18 +1,23 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
-project(http-server VERSION 0.1)
+project(http-server VERSION 0.1 LANGUAGES C)
 
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+
+# Use Clang as specified in project guidelines
 set(CMAKE_C_COMPILER clang)
 
-# Generate a compile comands file for clangd
+# Generate compile commands for clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Define source files
-file(GLOB SOURCES "${CMAKE_SOURCE_DIR}/src/*.c")
-list(APPEND SOURCES main.c)
+# Enable warnings
+if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
+    add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
 
-include_directories(include)
-
-add_executable(http-server ${SOURCES})
-
+# Add subdirectories
+add_subdirectory(src)
+add_subdirectory(app)
 add_subdirectory(tests)
