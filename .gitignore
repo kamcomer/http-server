@@ -4,3 +4,6 @@ build/
 test_site/
 .vscode
 RFC*
+server.log
+access.log
+*.log

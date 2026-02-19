@@ -132,3 +132,29 @@ char *url_decode(const char *encoded)
   decoded[j] = '\0';
   return decoded;
 }
+
+int is_path_safe(const char *path)
+{
+  if (path == NULL || strlen(path) == 0)
+  {
+    return 0;
+  }
+
+  if (path[0] == '/')
+  {
+    return 0;
+  }
+
+  const char *double_dot = strstr(path, "..");
+  if (double_dot != NULL)
+  {
+    return 0;
+  }
+
+  if (strstr(path, "/.") != NULL)
+  {
+    return 0;
+  }
+
+  return 1;
+}

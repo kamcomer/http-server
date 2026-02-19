@@ -5,6 +5,7 @@ set(LIB_SOURCES
     response.c
     progargs.c
     util.c
+    logging.c
 )
 
 # Create static library

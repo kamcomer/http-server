@@ -90,6 +90,13 @@ int process_response(int client_fd, const char *path, int protocol_major, int pr
     return -1;
   }
 
+  if (!is_path_safe(decoded_path))
+  {
+    free(decoded_path);
+    send_error_response(client_fd, 403, "Forbidden", "Access denied: path traversal not allowed.");
+    return -1;
+  }
+
   const char *mime_type = get_mime_type(decoded_path);
 
   long content_size;

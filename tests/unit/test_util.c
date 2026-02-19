@@ -105,6 +105,42 @@ START_TEST(test_url_decode_null)
 }
 END_TEST
 
+START_TEST(test_path_safe_normal)
+{
+    ck_assert_int_eq(is_path_safe("test.html"), 1);
+    ck_assert_int_eq(is_path_safe("path/to/file.html"), 1);
+}
+END_TEST
+
+START_TEST(test_path_safe_traversal)
+{
+    ck_assert_int_eq(is_path_safe("../secret.txt"), 0);
+    ck_assert_int_eq(is_path_safe("foo/../bar.txt"), 0);
+    ck_assert_int_eq(is_path_safe("..%2Ffile.txt"), 0);
+}
+END_TEST
+
+START_TEST(test_path_safe_absolute)
+{
+    ck_assert_int_eq(is_path_safe("/etc/passwd"), 0);
+}
+END_TEST
+
+START_TEST(test_path_safe_hidden)
+{
+    ck_assert_int_eq(is_path_safe(".hidden"), 1);
+    ck_assert_int_eq(is_path_safe("/.hidden"), 0);
+    ck_assert_int_eq(is_path_safe("foo/.secret"), 0);
+}
+END_TEST
+
+START_TEST(test_path_safe_null)
+{
+    ck_assert_int_eq(is_path_safe(NULL), 0);
+    ck_assert_int_eq(is_path_safe(""), 0);
+}
+END_TEST
+
 Suite *util_suite(void)
 {
     Suite *s;
@@ -135,6 +171,14 @@ Suite *util_suite(void)
     tcase_add_test(tc_url, test_url_decode_special_chars);
     tcase_add_test(tc_url, test_url_decode_null);
     suite_add_tcase(s, tc_url);
+
+    TCase *tc_security = tcase_create("Security");
+    tcase_add_test(tc_security, test_path_safe_normal);
+    tcase_add_test(tc_security, test_path_safe_traversal);
+    tcase_add_test(tc_security, test_path_safe_absolute);
+    tcase_add_test(tc_security, test_path_safe_hidden);
+    tcase_add_test(tc_security, test_path_safe_null);
+    suite_add_tcase(s, tc_security);
 
     return s;
 }

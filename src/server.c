@@ -1,6 +1,7 @@
 #include "server.h"
 #include "request.h"
 #include "response.h"
+#include "logging.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,6 +10,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 
 #define DEFAULT_BACKLOG 3
 
