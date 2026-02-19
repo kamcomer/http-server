@@ -1,13 +1,20 @@
 # HTTP Server
 
-A simple, lightweight HTTP/1.1 server written in C.
+A lightweight HTTP/1.1 server written in C.
 
 ## Features
 
-- **GET requests** - Serves static files from a specified directory
+- **GET and HEAD requests** - Serves static files from a specified directory
+- **MIME type detection** - Automatic content-type based on file extension
+- **URL decoding** - Handles percent-encoded URLs
+- **HTTP header parsing** - Parses Host, User-Agent, Accept, and more
+- **Path traversal protection** - Blocks unsafe path access
+- **Request size limits** - Prevents DoS attacks
+- **Keep-Alive support** - Reuses connections for multiple requests
+- **Concurrent connections** - Handles multiple clients simultaneously
 - **Command-line arguments** - Configure port and root directory
 - **Signal handling** - Graceful shutdown on SIGINT (Ctrl+C)
-- **Socket options** - SO_REUSEADDR and SO_REUSEPORT enabled for quick restarts
+- **Structured logging** - Configurable log levels
 
 ## Building
 
@@ -18,6 +25,16 @@ make
 ```
 
 The executable will be at `./build/app/http-server`.
+
+## Docker
+
+```bash
+# Build image
+docker build -t http-server .
+
+# Run container
+docker run -p 8080:8080 http-server
+```
 
 ## Usage
 
@@ -51,11 +68,12 @@ The executable will be at `./build/app/http-server`.
 ## Architecture
 
 - **app/main.c** - Entry point
-- **src/server.c** - Server socket handling and main loop
-- **src/request.c** - HTTP request parsing (method, URI, protocol)
-- **src/response.c** - HTTP response generation and file serving
+- **src/server.c** - Socket handling, fork-based concurrency
+- **src/request.c** - HTTP request parsing
+- **src/response.c** - Response generation and file serving
 - **src/progargs.c** - Command-line argument handling
-- **src/util.c** - Utility functions
+- **src/util.c** - Utilities (MIME types, URL decoding, path safety)
+- **src/logging.c** - Structured logging
 - **include/http_types.h** - Shared HTTP types and enums
 - **include/server.h** - Server module interface
 
@@ -69,16 +87,44 @@ make
 ./tests/unit/tests
 ```
 
-## Status
+## Security Features
 
-Currently supports:
-- HTTP/1.1 GET requests
-- Static file serving
-- Error responses (404 Not Found, 500 Internal Server Error)
+- Path traversal protection (`..` blocked)
+- Request size limits (8KB max)
+- Hidden file protection
+- Absolute path blocking
 
-Not yet implemented:
-- Other HTTP methods (POST, PUT, DELETE, etc.)
-- Content-Type detection
-- Keep-Alive connections
-- HTTP headers parsing
-- Concurrent connections
+## HTTP Compliance
+
+- HTTP/1.1 support
+- Keep-Alive connections (5s timeout, 10 requests max)
+- HEAD method support
+- Proper status codes: 200, 400, 403, 404, 500
+
+## Project Structure
+
+```
+http-server/
+├── app/
+│   └── main.c           # Entry point
+├── src/
+│   ├── server.c/h       # Socket handling
+│   ├── request.c/h      # Request parsing
+│   ├── response.c/h     # Response generation
+│   ├── progargs.c/h    # CLI arguments
+│   ├── util.c/h        # Utilities
+│   └── logging.c/h     # Logging
+├── include/
+│   ├── http_types.h    # HTTP types
+│   ├── request.h
+│   ├── response.h
+│   ├── server.h
+│   ├── progargs.h
+│   ├── util.h
+│   └── logging.h
+├── tests/
+│   └── unit/           # Unit tests
+├── .github/workflows/  # CI/CD
+├── Dockerfile
+└── .clang-format
+```
