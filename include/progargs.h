@@ -28,5 +28,6 @@ typedef struct
 
 ParsedArguments *handle_arguments(int argc, char *argv[], const ArgumentDefinitions arg_defs);
 char *get_argument_value(ParsedArguments *parsed_args, const char *arg);
+void free_parsed_args(ParsedArguments *parsed_args);
 
 #endif
