@@ -127,7 +127,7 @@ static int handle_connection(int client_fd)
                      request.protocol.major_version, 
                      request.protocol.minor_version);
     
-    free(request.uri.path);
+    free_request(&request);
     close(client_fd);
     return 0;
 }

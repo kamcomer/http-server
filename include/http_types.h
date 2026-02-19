@@ -4,6 +4,8 @@
 #define MAX_URI_LENGTH 255
 #define MAX_METHOD_LENGTH 10
 #define MAX_PROTOCOL_LENGTH 10
+#define MAX_HEADER_VALUE_LENGTH 256
+#define MAX_HEADERS 20
 #define INVALID_VERSION_NUMBER -1
 #define INVALID_REQUEST_HEADER -1
 #define CRLF "\r\n"
@@ -105,5 +107,19 @@ typedef struct
   int major_version;
   int minor_version;
 } Protocol;
+
+typedef struct
+{
+  char *host;
+  char *user_agent;
+  char *accept;
+  char *accept_language;
+  char *accept_encoding;
+  char *connection;
+  char *content_type;
+  char *content_length;
+  char *referer;
+  char *cookie;
+} HttpHeaders;
 
 #endif

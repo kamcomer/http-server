@@ -218,6 +218,13 @@ int parse_request(Request *request, char *buff)
     return INVALID_REQUEST_HEADER;
   }
 
+  if (header_parse_headers(&request->headers, buff) < 0)
+  {
+    fprintf(stderr, "Error: Failed to parse headers\n");
+    free(request->uri.path);
+    return INVALID_REQUEST_HEADER;
+  }
+
   return 0;
 }
 
@@ -268,4 +275,169 @@ char *read_request(int client_fd)
   }
   read_buff[total_size] = '\0';
   return read_buff;
+}
+
+static char *trim_whitespace(char *str)
+{
+  while (isspace((unsigned char)*str))
+  {
+    str++;
+  }
+
+  if (*str == 0)
+  {
+    return str;
+  }
+
+  char *end = str + strlen(str) - 1;
+  while (end > str && isspace((unsigned char)*end))
+  {
+    end--;
+  }
+  *(end + 1) = '\0';
+
+  return str;
+}
+
+int header_parse_headers(HttpHeaders *headers, char *request_body)
+{
+  if (headers == NULL || request_body == NULL)
+  {
+    return -1;
+  }
+
+  memset(headers, 0, sizeof(HttpHeaders));
+
+  char *body_copy = strdup(request_body);
+  if (body_copy == NULL)
+  {
+    return -1;
+  }
+
+  char *line = strtok(body_copy, "\r\n");
+  int line_count = 0;
+
+  while (line != NULL && line_count < MAX_HEADERS)
+  {
+    line_count++;
+
+    if (line_count == 1)
+    {
+      line = strtok(NULL, "\r\n");
+      continue;
+    }
+
+    if (strlen(line) == 0)
+    {
+      break;
+    }
+
+    char *colon = strchr(line, ':');
+    if (colon != NULL)
+    {
+      *colon = '\0';
+      char *name = trim_whitespace(line);
+      char *value = trim_whitespace(colon + 1);
+
+      if (strcasecmp(name, "Host") == 0)
+      {
+        headers->host = strdup(value);
+      }
+      else if (strcasecmp(name, "User-Agent") == 0)
+      {
+        headers->user_agent = strdup(value);
+      }
+      else if (strcasecmp(name, "Accept") == 0)
+      {
+        headers->accept = strdup(value);
+      }
+      else if (strcasecmp(name, "Accept-Language") == 0)
+      {
+        headers->accept_language = strdup(value);
+      }
+      else if (strcasecmp(name, "Accept-Encoding") == 0)
+      {
+        headers->accept_encoding = strdup(value);
+      }
+      else if (strcasecmp(name, "Connection") == 0)
+      {
+        headers->connection = strdup(value);
+      }
+      else if (strcasecmp(name, "Content-Type") == 0)
+      {
+        headers->content_type = strdup(value);
+      }
+      else if (strcasecmp(name, "Content-Length") == 0)
+      {
+        headers->content_length = strdup(value);
+      }
+      else if (strcasecmp(name, "Referer") == 0)
+      {
+        headers->referer = strdup(value);
+      }
+      else if (strcasecmp(name, "Cookie") == 0)
+      {
+        headers->cookie = strdup(value);
+      }
+    }
+
+    line = strtok(NULL, "\r\n");
+  }
+
+  free(body_copy);
+  return 0;
+}
+
+void free_request(Request *request)
+{
+  if (request == NULL)
+  {
+    return;
+  }
+
+  if (request->uri.path != NULL)
+  {
+    free(request->uri.path);
+  }
+
+  if (request->headers.host != NULL)
+  {
+    free(request->headers.host);
+  }
+  if (request->headers.user_agent != NULL)
+  {
+    free(request->headers.user_agent);
+  }
+  if (request->headers.accept != NULL)
+  {
+    free(request->headers.accept);
+  }
+  if (request->headers.accept_language != NULL)
+  {
+    free(request->headers.accept_language);
+  }
+  if (request->headers.accept_encoding != NULL)
+  {
+    free(request->headers.accept_encoding);
+  }
+  if (request->headers.connection != NULL)
+  {
+    free(request->headers.connection);
+  }
+  if (request->headers.content_type != NULL)
+  {
+    free(request->headers.content_type);
+  }
+  if (request->headers.content_length != NULL)
+  {
+    free(request->headers.content_length);
+  }
+  if (request->headers.referer != NULL)
+  {
+    free(request->headers.referer);
+  }
+  if (request->headers.cookie != NULL)
+  {
+    free(request->headers.cookie);
+  }
 }
