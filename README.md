@@ -54,15 +54,26 @@ make
 - **src/progargs.c** - Command-line argument handling
 - **src/util.c** - Utility functions
 
+## Testing
+
+```bash
+# Build and run tests
+mkdir build && cd build
+cmake ..
+make
+./tests/tests
+```
+
 ## Status
 
 Currently supports:
 - HTTP/1.1 GET requests
 - Static file serving
+- Error responses (404 Not Found, 500 Internal Server Error)
 
 Not yet implemented:
 - Other HTTP methods (POST, PUT, DELETE, etc.)
 - Content-Type detection
-- Error handling (404, 500, etc.)
 - Keep-Alive connections
 - HTTP headers parsing
+- Concurrent connections
