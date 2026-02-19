@@ -21,14 +21,13 @@ int header_parse_method(RequestMethod *method, char *method_str)
   {
     *method = METHOD_GET;
   }
+  else if (strcmp(method_str, "HEAD") == 0)
+  {
+    *method = METHOD_HEAD;
+  }
   else if (strcmp(method_str, "OPTIONS") == 0)
   {
     printf("Method Type Not Supported: OPTIONS\n");
-    return INVALID_REQUEST_HEADER;
-  }
-  else if (strcmp(method_str, "HEAD") == 0)
-  {
-    printf("Method Type Not Supported: HEAD\n");
     return INVALID_REQUEST_HEADER;
   }
   else if (strcmp(method_str, "POST") == 0)
@@ -240,6 +239,13 @@ char *read_request(int client_fd)
   }
   while (true)
   {
+    if (total_size >= MAX_REQUEST_SIZE)
+    {
+      fprintf(stderr, "Error: Request too large\n");
+      free(read_buff);
+      return NULL;
+    }
+
     int read_status = read(client_fd, read_buff + total_size, buffer_size - total_size);
     if (read_status < 0)
     {
@@ -255,14 +261,25 @@ char *read_request(int client_fd)
 
     total_size += read_status;
 
-    if (read_status < BUFFER_SIZE)
+    if (read_status < (int)(buffer_size - total_size))
     {
       break;
+    }
+
+    if (total_size >= MAX_REQUEST_SIZE)
+    {
+      fprintf(stderr, "Error: Request too large\n");
+      free(read_buff);
+      return NULL;
     }
 
     if (total_size == buffer_size)
     {
       buffer_size += BUFFER_SIZE;
+      if (buffer_size > MAX_REQUEST_SIZE)
+      {
+        buffer_size = MAX_REQUEST_SIZE + 1;
+      }
       char *temp = realloc(read_buff, buffer_size);
       if (temp == NULL)
       {

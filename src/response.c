@@ -81,7 +81,7 @@ int send_error_response(int client_fd, int status_code, const char *status_text,
   return -1;
 }
 
-int process_response(int client_fd, const char *path, int protocol_major, int protocol_minor)
+int process_response(int client_fd, const char *path, int protocol_major, int protocol_minor, RequestMethod method)
 {
   char *decoded_path = url_decode(path);
   if (decoded_path == NULL)
@@ -121,7 +121,11 @@ int process_response(int client_fd, const char *path, int protocol_major, int pr
   }
 
   send(client_fd, header, strlen(header), 0);
-  send(client_fd, contents, content_size, 0);
+  
+  if (method == METHOD_GET)
+  {
+    send(client_fd, contents, content_size, 0);
+  }
 
   free(contents);
   free(decoded_path);
