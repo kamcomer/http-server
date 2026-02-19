@@ -17,40 +17,48 @@ int header_parse_method(RequestMethod *method, char *method_str)
 
   str_to_upper(method_str);
 
-  if (strcmp(method_str, "OPTION"))
-  {
-    printf("Method Type Not Supported: OPTION\n");
-  }
-  else if (strcmp(method_str, "GET") == 0)
+  if (strcmp(method_str, "GET") == 0)
   {
     *method = METHOD_GET;
   }
-  else if (strcmp(method_str, "HEAD"))
+  else if (strcmp(method_str, "OPTIONS") == 0)
+  {
+    printf("Method Type Not Supported: OPTIONS\n");
+    return INVALID_REQUEST_HEADER;
+  }
+  else if (strcmp(method_str, "HEAD") == 0)
   {
     printf("Method Type Not Supported: HEAD\n");
+    return INVALID_REQUEST_HEADER;
   }
-  else if (strcmp(method_str, "POST"))
+  else if (strcmp(method_str, "POST") == 0)
   {
     printf("Method Type Not Supported: POST\n");
+    return INVALID_REQUEST_HEADER;
   }
-  else if (strcmp(method_str, "PUT"))
+  else if (strcmp(method_str, "PUT") == 0)
   {
     printf("Method Type Not Supported: PUT\n");
+    return INVALID_REQUEST_HEADER;
   }
-  else if (strcmp(method_str, "DELETE"))
+  else if (strcmp(method_str, "DELETE") == 0)
   {
     printf("Method Type Not Supported: DELETE\n");
+    return INVALID_REQUEST_HEADER;
   }
-  else if (strcmp(method_str, "TRACE"))
+  else if (strcmp(method_str, "TRACE") == 0)
   {
     printf("Method Type Not Supported: TRACE\n");
+    return INVALID_REQUEST_HEADER;
   }
-  else if (strcmp(method_str, "CONNECT"))
+  else if (strcmp(method_str, "CONNECT") == 0)
   {
     printf("Method Type Not Supported: CONNECT\n");
+    return INVALID_REQUEST_HEADER;
   }
   else
   {
+    fprintf(stderr, "Error: Unknown HTTP method: %s\n", method_str);
     return INVALID_REQUEST_HEADER;
   }
 
