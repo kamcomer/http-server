@@ -73,8 +73,14 @@ int socket_handle_connection(int client_fd)
 {
     Request request;
 
-    process_request(client_fd, &request);
-    process_valueonse(client_fd, request);
+    if (process_request(client_fd, &request) < 0)
+    {
+        send_error_response(client_fd, 400, "Bad Request", "Invalid request format");
+        close(client_fd);
+        return -1;
+    }
+
+    process_response(client_fd, request);
 
     close(client_fd);
     return 0;
@@ -141,7 +147,8 @@ int main(int argc, char *argv[])
 
     ParsedArguments *parsed_args = handle_arguments(argc, argv, prog_args);
 
-    const int port = atoi(get_argument_value(parsed_args, "port"));
+    char *port_str = get_argument_value(parsed_args, "port");
+    const int port = port_str ? atoi(port_str) : DEFAULT_PORT;
 
     server_fd = init_server_socket(port);
 
