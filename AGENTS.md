@@ -14,23 +14,17 @@ mkdir -p build && cd build
 cmake ..
 make
 
-# Build with tests
-cmake -DBUILD_TESTING=ON ..
-make
-
 # Clean build
 rm -rf build && mkdir build && cd build && cmake .. && make
 ```
+
+The executable will be at `./build/app/http-server`.
 
 ## Test Commands
 
 ```bash
 # Build and run all tests
-cd build && make tests && ./tests/tests
-
-# Run a single test (using check framework)
-# Tests are in tests/ directory using the check library
-# Currently minimal test suite in tests/test_main.c and tests/test.c
+cd build && make && ./tests/unit/tests
 ```
 
 ## Code Style Guidelines
@@ -51,26 +45,25 @@ cd build && make tests && ./tests/tests
 - Types/Structs: `PascalCase` (e.g., `RequestMethod`, `ProtocolType`)
 - Enums: `SCREAMING_SNAKE_CASE` for values (e.g., `METHOD_GET`, `SUCCESS_OK`)
 - Constants/Macros: `SCREAMING_SNAKE_CASE` (e.g., `BUFFER_SIZE`, `MAX_URI_LENGTH`)
-- Globals: Use sparingly, mark with comment if used (e.g., `server_fd`)
 - Private functions: `static` keyword, still use `snake_case`
 
 ### File Organization
+- Entry point: `app/main.c`
 - Headers: `include/*.h`
 - Source: `src/*.c`
-- Main: `main.c` (root directory)
-- Tests: `tests/*.c`
+- Tests: `tests/unit/*.c`
 
 ### Include Order
 1. Corresponding header (for .c files)
-2. System headers (arpa/inet.h, stdio.h, etc.)
-3. Project headers (use `"quotes"`)
+2. Other project headers
+3. System headers (use `< >`)
 
 Example:
 ```c
 #include "request.h"      // Corresponding header first
+#include "util.h"         // Other project headers
 #include <stdio.h>        // System headers
 #include <stdlib.h>
-#include "util.h"         // Other project headers
 ```
 
 ### Error Handling
@@ -105,13 +98,15 @@ Example:
 - Pass structs by pointer, not by value (for efficiency)
 - Mark file-scope functions as `static`
 
-## Architecture Patterns
+## Architecture
 
-- **main.c**: Entry point, socket initialization, signal handling, main loop
+- **app/main.c**: Entry point
+- **src/server.c**: Socket handling, fork-based concurrency
 - **src/request.c**: HTTP request parsing
 - **src/response.c**: HTTP response generation
 - **src/progargs.c**: Command-line argument parsing
-- **src/util.c**: Utility functions
+- **src/util.c**: Utilities (MIME types, URL decoding, path safety)
+- **src/logging.c**: Structured logging
 
 ## Common Constants
 
@@ -119,6 +114,7 @@ Example:
 - `MAX_URI_LENGTH`: 255 characters
 - `MAX_METHOD_LENGTH`: 10 characters
 - `MAX_PROTOCOL_LENGTH`: 10 characters
+- `MAX_REQUEST_SIZE`: 8192 bytes
 - Default port: 8080
 
 ## Git Ignore
@@ -130,10 +126,17 @@ Already configured in `.gitignore`:
 - `test_site/`
 - `.vscode`
 - `RFC*`
+- `*.log`
 
-## Development Notes
+## Testing
 
-- Server supports HTTP/1.1 GET requests only
-- Uses `SO_REUSEADDR` and `SO_REUSEPORT` for quick restarts
-- Graceful shutdown on SIGINT
-- Serves files from configurable root directory
+- Uses the `check` framework
+- Unit tests in `tests/unit/`
+- Run tests with: `./tests/unit/tests`
+
+## Security Considerations
+
+- Path traversal protection is implemented
+- Request size limits enforced
+- Hidden file protection
+- Absolute path blocking
