@@ -1,7 +1,9 @@
+#define _POSIX_C_SOURCE 200809L
 #include "util.h"
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 void remove_whitespace(char* str) {
   int len = strlen(str);
