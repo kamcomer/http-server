@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 200809L
 #include "request.h"
 #include "util.h"
 #include <ctype.h>
@@ -5,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <unistd.h>
 
 int header_parse_method(RequestMethod* method, char* method_str) {
