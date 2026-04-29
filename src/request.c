@@ -80,7 +80,6 @@ int header_parse_protocol_type(Protocol* protocol, char* protocol_str) {
   strncpy(type, protocol_str, offset);
   type[offset] = '\0';
 
-  ProtocolType result;
   if (strcmp(type, "HTTP") == 0) {
     protocol->type = PROTOCOL_HTTP;
   } else {
