@@ -1,16 +1,14 @@
 #include "response.h"
 #include "util.h"
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/socket.h>
 
-char *load_uri(const char *path, long *content_size)
-{
-  FILE *file;
+char* load_uri(const char* path, long* content_size) {
+  FILE* file;
   file = fopen(path, "rb");
-  if (file == NULL)
-  {
+  if (file == NULL) {
     perror("Error opening file");
     return NULL;
   }
@@ -19,9 +17,8 @@ char *load_uri(const char *path, long *content_size)
   *content_size = ftell(file);
   fseek(file, 0, SEEK_SET);
 
-  char *contents = malloc(*content_size);
-  if (contents == NULL)
-  {
+  char* contents = malloc(*content_size);
+  if (contents == NULL) {
     perror("Error allocating memory");
     fclose(file);
     return NULL;
@@ -33,12 +30,10 @@ char *load_uri(const char *path, long *content_size)
   return contents;
 }
 
-char *build_header(int status_code, const char *status_text, int protocol_major, int protocol_minor, 
-                   const char *content_type, long content_size)
-{
-  char *response_header = malloc(BUFFER_SIZE);
-  if (response_header == NULL)
-  {
+char* build_header(int status_code, const char* status_text, int protocol_major, int protocol_minor,
+                   const char* content_type, long content_size) {
+  char* response_header = malloc(BUFFER_SIZE);
+  if (response_header == NULL) {
     perror("Error allocating memory");
     return NULL;
   }
@@ -47,25 +42,21 @@ char *build_header(int status_code, const char *status_text, int protocol_major,
            "Content-Type: %s\r\n"
            "Content-Length: %ld\r\n"
            "Connection: close\r\n\r\n",
-           protocol_major, protocol_minor,
-           status_code, status_text,
-           content_type,
-           content_size);
+           protocol_major, protocol_minor, status_code, status_text, content_type, content_size);
 
   return response_header;
 }
 
-int send_error_response(int client_fd, int status_code, const char *status_text, const char *message)
-{
+int send_error_response(int client_fd, int status_code, const char* status_text,
+                        const char* message) {
   char response[BUFFER_SIZE];
-  const char *html_template =
-      "<!DOCTYPE html>\r\n"
-      "<html><head><title>%d %s</title></head>\r\n"
-      "<body><h1>%d %s</h1><p>%s</p></body></html>\r\n";
+  const char* html_template = "<!DOCTYPE html>\r\n"
+                              "<html><head><title>%d %s</title></head>\r\n"
+                              "<body><h1>%d %s</h1><p>%s</p></body></html>\r\n";
 
   char html_body[512];
-  snprintf(html_body, sizeof(html_body), html_template,
-           status_code, status_text, status_code, status_text, message);
+  snprintf(html_body, sizeof(html_body), html_template, status_code, status_text, status_code,
+           status_text, message);
 
   size_t html_len = strlen(html_body);
 
@@ -81,29 +72,26 @@ int send_error_response(int client_fd, int status_code, const char *status_text,
   return -1;
 }
 
-int process_response(int client_fd, const char *path, int protocol_major, int protocol_minor, RequestMethod method)
-{
-  char *decoded_path = url_decode(path);
-  if (decoded_path == NULL)
-  {
+int process_response(int client_fd, const char* path, int protocol_major, int protocol_minor,
+                     RequestMethod method) {
+  char* decoded_path = url_decode(path);
+  if (decoded_path == NULL) {
     send_error_response(client_fd, 400, "Bad Request", "Invalid URL encoding.");
     return -1;
   }
 
-  if (!is_path_safe(decoded_path))
-  {
+  if (!is_path_safe(decoded_path)) {
     free(decoded_path);
     send_error_response(client_fd, 403, "Forbidden", "Access denied: path traversal not allowed.");
     return -1;
   }
 
-  const char *mime_type = get_mime_type(decoded_path);
+  const char* mime_type = get_mime_type(decoded_path);
 
   long content_size;
-  char *contents = load_uri(decoded_path, &content_size);
+  char* contents = load_uri(decoded_path, &content_size);
 
-  if (contents == NULL)
-  {
+  if (contents == NULL) {
     free(decoded_path);
     send_error_response(client_fd, 404, "Not Found", "The requested resource was not found.");
     return -1;
@@ -111,19 +99,18 @@ int process_response(int client_fd, const char *path, int protocol_major, int pr
 
   printf("Serving file: %s (type: %s)\n", decoded_path, mime_type);
 
-  char *header = build_header(200, "OK", protocol_major, protocol_minor, mime_type, content_size);
-  if (header == NULL)
-  {
+  char* header = build_header(200, "OK", protocol_major, protocol_minor, mime_type, content_size);
+  if (header == NULL) {
     free(contents);
     free(decoded_path);
-    send_error_response(client_fd, 500, "Internal Server Error", "Failed to build response header.");
+    send_error_response(client_fd, 500, "Internal Server Error",
+                        "Failed to build response header.");
     return -1;
   }
 
   send(client_fd, header, strlen(header), 0);
-  
-  if (method == METHOD_GET)
-  {
+
+  if (method == METHOD_GET) {
     send(client_fd, contents, content_size, 0);
   }
 

@@ -12,8 +12,7 @@
 #define CRLF "\r\n"
 #define BUFFER_SIZE 1024
 
-typedef enum
-{
+typedef enum {
   METHOD_OPTION,
   METHOD_GET,
   METHOD_HEAD,
@@ -24,14 +23,9 @@ typedef enum
   METHOD_CONNECT
 } RequestMethod;
 
-typedef enum
-{
-  INFO_CONTINUE = 100,
-  INFO_SWITCH_PROTOCOLS = 101
-} InfoStatusCode;
+typedef enum { INFO_CONTINUE = 100, INFO_SWITCH_PROTOCOLS = 101 } InfoStatusCode;
 
-typedef enum
-{
+typedef enum {
   SUCCESS_OK = 200,
   SUCCESS_CREATED,
   SUCCESS_ACCEPTED,
@@ -41,8 +35,7 @@ typedef enum
   SUCCESS_PARTIAL_CONTENT
 } SuccessStatusCode;
 
-typedef enum
-{
+typedef enum {
   REDIRECT_MULTI_CHOICES = 300,
   REDIRECT_MOVED,
   REDIRECT_FOUND,
@@ -53,8 +46,7 @@ typedef enum
   REDIRECT_TEMP,
 } RedirectStatusCode;
 
-typedef enum
-{
+typedef enum {
   CLIENT_BAD_REQUEST = 400,
   CLIENT_UNAUTH,
   CLIENT_PAYMENT_REQ,
@@ -76,8 +68,7 @@ typedef enum
 
 } ClientErrorStatusCode;
 
-typedef enum
-{
+typedef enum {
   SERVER_INTERNAL_ERROR = 500,
   SERVER_NOT_IMPLEMENTED,
   SERVER_BAD_GATEWAY,
@@ -86,41 +77,36 @@ typedef enum
   SERVER_HTTP_VERSION_NOT_SUPPORTED
 } ServerErrorStatusCode;
 
-typedef enum
-{
+typedef enum {
   PROTOCOL_HTTP,
 } ProtocolType;
 
-typedef enum
-{
+typedef enum {
   ONE_TIME,
   KEEP_ALIVE,
 } ConnectionType;
 
-typedef struct
-{
-  char *path;
+typedef struct {
+  char* path;
 } Uri;
 
-typedef struct
-{
+typedef struct {
   ProtocolType type;
   int major_version;
   int minor_version;
 } Protocol;
 
-typedef struct
-{
-  char *host;
-  char *user_agent;
-  char *accept;
-  char *accept_language;
-  char *accept_encoding;
-  char *connection;
-  char *content_type;
-  char *content_length;
-  char *referer;
-  char *cookie;
+typedef struct {
+  char* host;
+  char* user_agent;
+  char* accept;
+  char* accept_language;
+  char* accept_encoding;
+  char* connection;
+  char* content_type;
+  char* content_length;
+  char* referer;
+  char* cookie;
 } HttpHeaders;
 
 #endif
