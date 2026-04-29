@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/wait.h>
@@ -41,12 +42,12 @@ static int init_server_socket(int port) {
     return -1;
   }
 
-  // Set SO_REUSEPORT option
+  // Set SO_REUSEPORT option (not available on all systems)
+#ifdef SO_REUSEPORT
   if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt)) < 0) {
-    perror("Failed to set SO_REUSEPORT");
-    close(socket_fd);
-    return -1;
+    perror("Warning: Failed to set SO_REUSEPORT");
   }
+#endif
 
   socket_address.sin_family = AF_INET;
   socket_address.sin_addr.s_addr = INADDR_ANY;
